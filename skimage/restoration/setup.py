@@ -9,6 +9,11 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
+    from pythran.config import make_extension
+
+    pythran_ext = make_extension(True).copy()
+    pythran_ext['include_dirs'].append('../_shared')
+    pythran_ext.pop('cxx', None)
 
     config = Configuration('restoration', parent_package, top_path)
     config.add_data_dir('tests')
@@ -30,9 +35,8 @@ def configuration(parent_package='', top_path=None):
     config.add_extension('_denoise_cy', sources=['_denoise_cy.c'],
         include_dirs=[get_numpy_include_dirs(), '../_shared'])
     config.add_extension('_nl_means_denoising',
-                         sources=['_nl_means_denoising.c'],
-                         include_dirs=[get_numpy_include_dirs(),
-                                       '../_shared'])
+                         sources=['_nl_means_denoising.cpp'],
+                         **pythran_ext)
 
     return config
 

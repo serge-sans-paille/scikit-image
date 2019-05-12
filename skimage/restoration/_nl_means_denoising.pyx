@@ -2,6 +2,7 @@
 #cython: wraparound=False
 #cython: boundscheck=False
 #cython: cdivision=True
+#cython: np_pythran=True
 
 import numpy as np
 cimport numpy as np
@@ -199,7 +200,7 @@ def _nl_means_denoising_2d(image, int s=7, int d=13, double h=0.1,
     cdef int row, col, i, j, channel
     cdef int row_start, row_end, col_start, col_end
     cdef int row_start_i, row_end_i, col_start_j, col_end_j
-    cdef IMGDTYPE [::1] new_values = np.zeros(n_channels).astype(np.float64)
+    cdef IMGDTYPE [::1] new_values = np.zeros(n_channels, np.float64)
     cdef IMGDTYPE [:, :, ::1] padded = np.ascontiguousarray(np.pad(image,
                        ((offset, offset), (offset, offset), (0, 0)),
                         mode='reflect').astype(np.float64))
@@ -207,10 +208,12 @@ def _nl_means_denoising_2d(image, int s=7, int d=13, double h=0.1,
     cdef double A = ((s - 1.) / 4.)
     cdef double new_value
     cdef double weight_sum, weight
+    cdef np.ndarray[IMGDTYPE, ndim=2] xg_col, xg_row
     xg_row, xg_col = np.mgrid[-offset:offset + 1, -offset:offset + 1]
-    cdef IMGDTYPE [:, ::1] w = np.ascontiguousarray(np.exp(
-                             -(xg_row * xg_row + xg_col * xg_col) / (2 * A * A)).
-                             astype(np.float64))
+    cdef IMGDTYPE [:, ::1] w = np.ascontiguousarray(np.astype(
+        np.exp(
+            -(xg_row * xg_row + xg_col * xg_col) / (2 * A * A))
+    ))
     cdef double distance
     w = 1. / (n_channels * np.sum(w) * h * h) * w
 
