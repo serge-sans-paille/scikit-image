@@ -13,6 +13,8 @@ def configuration(parent_package='', top_path=None):
 
     pythran_ext = make_extension(True).copy()
     pythran_ext['include_dirs'].append('../_shared')
+    pythran_ext['extra_compile_args'].append('-fPIC')
+    pythran_ext['extra_link_args'].append('-fPIC')
     pythran_ext.pop('cxx', None)
 
     config = Configuration('restoration', parent_package, top_path)
